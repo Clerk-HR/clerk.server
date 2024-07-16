@@ -1,0 +1,6 @@
+@clerk.server_HostAddress = http://localhost:5200
+
+GET {{clerk.server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
