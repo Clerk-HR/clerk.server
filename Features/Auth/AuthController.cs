@@ -16,7 +16,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> CreateAccount([FromBody] CreateAccountDto dto)
+    public async Task<IActionResult> CreateAccount([FromBody] RegisterDto dto)
     {
         var result = await _service.CreateAccount(dto);
         if (!result.IsSuccess)

@@ -23,13 +23,13 @@ public struct Result
     public static Result Exception(string exception) => new(false, error: new() { Code = 500, Messages = [exception] });
 }
 
-public struct SuccessResult
+public record SuccessResult
 {
     public object? Data { get; set; }
     public string Message { get; set; }
 }
 
-public struct ErrorResult
+public record ErrorResult
 {
     public required int Code { get; set; }
     public required string[] Messages { get; set; }

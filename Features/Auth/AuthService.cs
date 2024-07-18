@@ -8,7 +8,7 @@ namespace clerk.server.Features.Auth;
 
 public interface IAuthService
 {
-    Task<Result> CreateAccount(CreateAccountDto dto);
+    Task<Result> CreateAccount(RegisterDto dto);
 }
 
 public class AuthService : IAuthService
@@ -21,9 +21,9 @@ public class AuthService : IAuthService
         _jwtTokenManager = jwtTokenManager;
     }
 
-    public async Task<Result> CreateAccount(CreateAccountDto dto)
+    public async Task<Result> CreateAccount(RegisterDto dto)
     {
-        var isEmailTaken = await _repository.UserAccounts.AnyAsync(u => u.Email == dto.Email);
+        var isEmailTaken = await _repository.Users.AnyAsync(u => u.Email == dto.Email);
 
         if (isEmailTaken) return Result.Failure(["email is registered to an existing account"]);
 
@@ -35,24 +35,24 @@ public class AuthService : IAuthService
             return Result.Failure(errors);
         }
 
-        var newAccount = new UserAccountModel
+        var newUser = new UserModel
         {
             Email = dto.Email,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
         };
 
-        await _repository.UserAccounts.AddAsync(newAccount);
+        await _repository.Users.AddAsync(newUser);
         await _repository.SaveChangesAsync();
 
-        var response = new CreateAccountResponseDto
+        var response = new AuthResponseDto
         {
-            Account = new()
+            User = new()
             {
-                Id = newAccount.Id,
-                Email = newAccount.Email,
-                OnBoarding = newAccount.OnBoarding
+                Id = newUser.Id,
+                Email = newUser.Email,
+                OnBoarding = newUser.OnBoarding
             },
-            Token = _jwtTokenManager.GenerateAccountAccessToken(newAccount.Id)
+            Token = _jwtTokenManager.GenerateAccountAccessToken(newUser.Id)
         };
 
         return Result.Success("account created successfully", response);

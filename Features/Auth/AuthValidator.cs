@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace clerk.server.Features.Auth;
 
-public class AuthValidator : AbstractValidator<CreateAccountDto>
+public class AuthValidator : AbstractValidator<RegisterDto>
 {
 
     public AuthValidator()

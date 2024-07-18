@@ -8,7 +8,7 @@ public class GlobalExceptionHandler : IExceptionHandler
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         await httpContext.Response.WriteAsJsonAsync(
-            Result.Exception(exception.Message)
+            Result.Exception(exception.Message).ErrorResult
         );
         return true;
     }

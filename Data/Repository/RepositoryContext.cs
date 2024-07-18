@@ -18,6 +18,5 @@ public class RepositoryContext : DbContext
 
 
     public DbSet<UserModel> Users { get; set; }
-    public DbSet<UserAccountModel> UserAccounts { get; set; }
     public DbSet<WorkspaceModel> Workspaces { get; set; }
 }
