@@ -1,12 +1,20 @@
 using clerk.server.Configurations;
 using clerk.server.Exceptions;
+using clerk.server.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Scrutor;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration.GetSection(AppSettings.ConnectionStrings).Bind(AppSettings.Connections);
+builder.Configuration.GetSection(AppSettings.ConnectionStrings)
+    .Bind(AppSettings.Connections);
+
+builder.Configuration.GetSection(AppSettings.JwtConfig)
+    .Bind(AppSettings.JwtOptions);
+
+builder.Services.ConfigurePostgresDB();
+builder.Services.ConfigureAuthentication();
 
 builder.Services.Scan(x =>
     x.FromAssemblies(typeof(Program).Assembly)
@@ -15,6 +23,7 @@ builder.Services.Scan(x =>
     .AsMatchingInterface()
     .WithScopedLifetime()
 );
+
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddControllers();
