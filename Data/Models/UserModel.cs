@@ -9,21 +9,22 @@ public class UserModel
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
-    
     public string? AvatarUrl { get; set; }
     public string Fullname { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
-    public OnBoarding OnBoarding { get; set; } = OnBoarding.UserDetails;
+    public OnBoarding OnBoarding { get; set; } = OnBoarding.CreateAccount;
+    public DateTime CreatedOn { get; } = DateTime.UtcNow;
 
-    [ForeignKey(nameof(WorkspaceModel))]
-    public Guid WorkspaceId { get; set; }
-    public WorkspaceModel Workspace { get; set; } = new();
+    [ForeignKey(nameof(MemberModel))]
+    public Guid? MemberId { get; set; }
+    public MemberModel? Profile { get; set; }
 
 }
 
 public enum OnBoarding
 {
+    CreateAccount,
     UserDetails,
-    Organization,
+    JoinCreate,
     Complete
 }

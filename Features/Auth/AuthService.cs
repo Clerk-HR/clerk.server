@@ -1,6 +1,8 @@
-using BCrypt.Net;
 using clerk.server.Data.Models;
 using clerk.server.Data.Repository;
+using clerk.server.Features.Member;
+using clerk.server.Features.Organization;
+using clerk.server.Features.User;
 using clerk.server.Helpers;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +10,9 @@ namespace clerk.server.Features.Auth;
 
 public interface IAuthService
 {
-    Task<Result> CreateAccount(RegisterDto dto);
+    Task<Result> Register(RegisterDto dto);
+    Task<Result> Login(LoginDto dto);
+    Task<Result> GetCurrentUser(Guid userId);
 }
 
 public class AuthService : IAuthService
@@ -21,7 +25,7 @@ public class AuthService : IAuthService
         _jwtTokenManager = jwtTokenManager;
     }
 
-    public async Task<Result> CreateAccount(RegisterDto dto)
+    public async Task<Result> Register(RegisterDto dto)
     {
         var isEmailTaken = await _repository.Users.AnyAsync(u => u.Email == dto.Email);
 
@@ -38,7 +42,8 @@ public class AuthService : IAuthService
         var newUser = new UserModel
         {
             Email = dto.Email,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password),
+            OnBoarding = OnBoarding.UserDetails
         };
 
         await _repository.Users.AddAsync(newUser);
@@ -46,16 +51,66 @@ public class AuthService : IAuthService
 
         var response = new AuthResponseDto
         {
-            User = new()
-            {
-                Id = newUser.Id,
-                Email = newUser.Email,
-                OnBoarding = newUser.OnBoarding
-            },
-            Token = _jwtTokenManager.GenerateAccountAccessToken(newUser.Id)
+            AccessToken = _jwtTokenManager.GenerateAccessToken(newUser.Id)
         };
 
         return Result.Success("account created successfully", response);
 
     }
+
+    public async Task<Result> Login(LoginDto dto)
+    {
+        var user = await _repository.Users.AsNoTracking().FirstOrDefaultAsync(x => x.Email == dto.Email);
+        if (user == null) return Result.Failure(["bad credentials"]);
+
+        var authenticationResult = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+
+        if (!authenticationResult)
+        {
+            return Result.Failure(["bad credentials"]);
+        }
+
+        var response = new AuthResponseDto
+        {
+            AccessToken = _jwtTokenManager.GenerateAccessToken(user.Id)
+        };
+
+        return Result.Success("signed-in successfully", response);
+    }
+
+    public async Task<Result> GetCurrentUser(Guid userId)
+    {
+        var user = await _repository.Users.Where(u => u.Id == userId).Select(x => new UserDto()
+        {
+            Id = x.Id,
+            Fullname = x.Fullname,
+            PhoneNumber = x.PhoneNumber,
+            Email = x.Email,
+            AvatarUrl = x.AvatarUrl,
+            OnBoarding = x.OnBoarding,
+            CreatedOn = x.CreatedOn,
+            Profile = x.Profile == null ? null : new MemberDto
+            {
+                Id = x.Profile.Id,
+                Roles = x.Profile.Roles,
+                Organization = new OrganizationDto
+                {
+                    Id = x.Profile.Organization.Id,
+                    Description = x.Profile.Organization.Description,
+                    Name = x.Profile.Organization.Name,
+                    logoUrl = x.Profile.Organization.LogoUrl,
+                }
+
+
+            }
+
+        }).FirstOrDefaultAsync();
+
+        if (user == null) return Result.Failure(["user not found"]);
+
+        return Result.Success("signed-in", user);
+    }
+
+
+
 }

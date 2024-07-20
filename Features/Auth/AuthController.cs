@@ -1,4 +1,5 @@
 
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,16 +16,28 @@ public class AuthController : ControllerBase
         _service = service;
     }
 
-    [HttpPost]
-    public async Task<IActionResult> CreateAccount([FromBody] RegisterDto dto)
+    [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
     {
-        var result = await _service.CreateAccount(dto);
+        var result = await _service.Register(dto);
         if (!result.IsSuccess)
         {
             return BadRequest(result.ErrorResult);
         }
         return Ok(result.SuccessResult);
     }
+
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginDto dto)
+    {
+        var result = await _service.Login(dto);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result.ErrorResult);
+        }
+        return Ok(result.SuccessResult);
+    }
+
 
 
 }

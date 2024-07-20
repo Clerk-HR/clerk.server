@@ -8,16 +8,16 @@ namespace clerk.server.Features.Auth;
 
 public interface IJwtTokenManager
 {
-    string GenerateAccountAccessToken(Guid AccountId);
+    string GenerateAccessToken(Guid AccountId);
 }
 
 public class JwtTokenManager : IJwtTokenManager
 {
-    public string GenerateAccountAccessToken(Guid AccountId)
+    public string GenerateAccessToken(Guid UserId)
     {
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, AccountId.ToString())
+            new Claim(ClaimTypes.NameIdentifier, UserId.ToString())
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(AppSettings.JwtOptions.Secret));

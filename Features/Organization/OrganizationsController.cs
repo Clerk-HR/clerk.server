@@ -1,47 +1,43 @@
-
 using System.Security.Claims;
 using clerk.server.Helpers;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace clerk.server.Features.User;
+namespace clerk.server.Features.Organization;
 
 [ApiController]
 [Route("api/[controller]")]
-[AllowAnonymous]
-public class UsersController : ControllerBase
+public class OrganizationsController : ControllerBase
 {
-    private readonly IUserService _service;
-    public UsersController(IUserService service)
+    private IOrganizationService _service;
+
+    public OrganizationsController(IOrganizationService service)
     {
         _service = service;
     }
 
-    [HttpGet("current-user")]
-    public async Task<IActionResult> GetCurrentUser()
+    [HttpPost]
+    public async Task<IActionResult> CreateOrganization([FromBody] CreateOrganizationDto dto)
     {
         var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (userId == null) return BadRequest(Result.Unauthorized());
 
-        var result = await _service.GetCurrentUser(Guid.Parse(userId));
-        if (!result.IsSuccess) return BadRequest(result.ErrorResult);
-
-        return Ok(result.SuccessResult);
-
-    }
-
-    [HttpPost("user-details")]
-    public async Task<IActionResult> UpdateUserDetails([FromBody] UserDetailsDto dto)
-    {
-        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (userId == null) return BadRequest(Result.Unauthorized());
-
-        var result = await _service.PostUserDetails(Guid.Parse(userId), dto);
+        var result = await _service.CreateOrganization(Guid.Parse(userId), dto);
 
         if (!result.IsSuccess) return BadRequest(result.ErrorResult);
 
         return Ok(result.SuccessResult);
     }
 
+    [HttpPost("join")]
+    public async Task<IActionResult> JoinOrganization([FromBody] JoinDto dto)
+    {
+        var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (userId == null) return BadRequest(Result.Unauthorized());
 
-}
+        var result = await _service.JoinOrganization(Guid.Parse(userId), dto);
+        if (!result.IsSuccess) return BadRequest(result.ErrorResult);
+
+        return Ok(result.SuccessResult);
+    }
+
+}   

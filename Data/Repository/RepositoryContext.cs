@@ -16,7 +16,7 @@ public class RepositoryContext : DbContext
         base.OnModelCreating(modelBuilder);
     }
 
-
     public DbSet<UserModel> Users { get; set; }
-    public DbSet<WorkspaceModel> Workspaces { get; set; }
+    public DbSet<OrganizationModel> Organizations { get; set; }
+    public DbSet<MemberModel> Members { get; set; }
 }
