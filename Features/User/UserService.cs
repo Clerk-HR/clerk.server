@@ -42,6 +42,7 @@ public class UserService : IUserService
                     Description = x.Profile.Organization.Description,
                     Name = x.Profile.Organization.Name,
                     logoUrl = x.Profile.Organization.LogoUrl,
+                    InviteCode = x.Profile.Roles.Contains(Role.Manager) ? x.Profile.Organization.InviteCode : null
                 }
             }
 

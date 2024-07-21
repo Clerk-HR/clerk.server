@@ -109,6 +109,9 @@ public class OrganizationService : IOrganizationService
 
         organization.Members = [newMember];
 
+        await _repository.Members.AddAsync(newMember);
+        await _repository.SaveChangesAsync();
+
         return Result.Success("Welcome to " + organization.Name);
 
     }
@@ -116,8 +119,15 @@ public class OrganizationService : IOrganizationService
     {
         var _random = new Random();
 
-        return (char)_random.Next(97, 127) + _random.Next(10000, 99999).ToString("D6");
+        char letter = (char)_random.Next('A', 'Z' + 1);
 
+        string digits = string.Empty;
+        for (int i = 0; i < 5; i++)
+        {
+            digits += _random.Next(0, 10).ToString();
+        }
+
+        return letter + digits;
     }
 
 }
