@@ -40,4 +40,15 @@ public class OrganizationsController : ControllerBase
         return Ok(result.SuccessResult);
     }
 
-}   
+    [HttpGet("members")]
+    public async Task<IActionResult> GetMembers(Guid organizationId)
+    {
+        var result = await _service.GetMembers(organizationId);
+        if (!result.IsSuccess) return BadRequest(result.ErrorResult);
+
+        return Ok(result.SuccessResult);    
+
+    }
+
+
+}

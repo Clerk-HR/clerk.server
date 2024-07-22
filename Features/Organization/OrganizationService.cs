@@ -11,6 +11,7 @@ public interface IOrganizationService
 {
     Task<Result> CreateOrganization(Guid userId, CreateOrganizationDto dto);
     Task<Result> JoinOrganization(Guid userId, JoinDto dto);
+    Task<Result> GetMembers(Guid organizationId);
 }
 
 public class OrganizationService : IOrganizationService
@@ -84,6 +85,35 @@ public class OrganizationService : IOrganizationService
 
     }
 
+    public async Task<Result> GetMembers(Guid organizationId)
+    {
+        var organization = _repository.Organizations.AnyAsync(x => x.Id == organizationId);
+        if (organization == null)
+        {
+            return Result.Failure(["organization not found"]);
+        }
+
+        var members = await _repository.Members.Where(m => m.Id == organizationId).Select(x =>
+             new MemberDto
+             {
+                 Id = x.Id,
+                 Roles = x.Roles,
+                 Organization = null,
+                 User = new UserDto
+                 {
+                     Id = x.User.Id,
+                     Fullname = x.User.Fullname,
+                     PhoneNumber = x.User.PhoneNumber,
+                     Email = x.User.Email,
+                     AvatarUrl = x.User.AvatarUrl,
+                     CreatedOn = x.User.CreatedOn,
+                 }
+             }
+        ).ToListAsync();
+
+        return Result.Success(members);
+
+    }
     public async Task<Result> JoinOrganization(Guid userId, JoinDto dto)
     {
         var user = await _repository.Users.FindAsync(userId);
